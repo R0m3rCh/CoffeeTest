@@ -3,15 +3,15 @@
 }
 
 select {
-  background:transparent;
-  color: white;
-  border-color: white;
+  color: var(--vscode-activity-bar-foreground);
+  border-color: var(--vscode-sidebar-border);
+  background-color: var(--vscode-activity-bar-background);
   font-size: medium;
 }
 
 select:focus {
   outline: none !important;
-  border-color: #0078D8;
+  border-color: var(--vscode-sidebar-border);
 }
 
 [class^="gg-eye"] {
