@@ -2,7 +2,7 @@ export interface FixtureFileData {
   name: string;
   tests: TestFileData[];
   loc: Loc;
-  isSkiped: boolean;
+  isSkipped: boolean;
 }
 
 interface TestFileData {
@@ -19,4 +19,8 @@ type Loc = {
 type DocLocation = {
   line: number;
   column: number;
+}
+
+export interface TestEventCases {
+  [prop: number | string]: string
 }

@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
-import { FixtureFileData } from './interfaces/TestSuite';
+import { FixtureFileData, TestEventCases } from './interfaces/TestSuite';
 import { BrowserOptions } from './interfaces/settingsView';
 import { TestInfo, TestSuiteInfo, TestRunStartedEvent, TestRunFinishedEvent, TestSuiteEvent, TestEvent } from 'vscode-test-adapter-api';
+
+export let testProcessPID: number[] = [];
 
 export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
   let testCafeSuite: TestSuiteInfo = {
@@ -88,32 +90,26 @@ async function runNode(
 		}
 		testStatesEmitter.fire(<TestSuiteEvent>{ type: 'suite', suite: node.id, state: 'completed' });
 	} else {
-
-    
-
-
-
-
     return new Promise<void>((resolve, reject) => {
-
-
-
-
+      const testEvents: TestEventCases = {
+        0: 'passed',
+        1: 'failed',
+        'undefined': 'errored'
+      }
       const outputChannel = vscode.window.createOutputChannel('testcafe-logs');
+
       outputChannel.show();
-
-
-
-
       testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
-			runningTestProcess = childProcess.spawn(`FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npm test`, {shell: true, cwd: workspace.uri.path});
+			runningTestProcess = childProcess.spawn(`FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npx ts-node runner.ts`, {shell: true, cwd: workspace.uri.path});
+      testProcessPID.push(runningTestProcess.pid);
       runningTestProcess.stdout?.on('data', (data: Buffer) => {
         outputChannel.append(data.toString());
       })
 			runningTestProcess.once('exit', (code) => {
+        testProcessPID = testProcessPID.filter(item => item != runningTestProcess?.pid);
         runningTestProcess = undefined;
         testStatesEmitter.fire(<TestEvent>{
-          type: 'test', test: node.id, state: code === 0 ? 'passed' : code === 1 ? 'failed' : 'errored'
+          type: 'test', test: node.id, state: code === null ? 'skipped' : testEvents[code]
         });
 				resolve();
 			});

@@ -3,7 +3,6 @@ const browserTools = require('testcafe-browser-tools');
 
 export class SettingsView implements vscode.WebviewViewProvider {
   public static readonly viewType = 'coffeeTest.settingsView';
-  // private _view?: vscode.WebviewView;
   public extensionContext: vscode.ExtensionContext;
 
   constructor(
@@ -17,7 +16,6 @@ export class SettingsView implements vscode.WebviewViewProvider {
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext<unknown>,
     token: vscode.CancellationToken): Promise<void> {
-      // this._view = webviewView;
       webviewView.webview.options = {
         enableScripts: true,
         localResourceRoots: [
@@ -26,12 +24,7 @@ export class SettingsView implements vscode.WebviewViewProvider {
       };
       webviewView.webview.html = await this._getHtmlForWebView(webviewView.webview);
       webviewView.webview.onDidReceiveMessage(message => {
-        switch (message.command) {
-          case 'browser':
-            this.extensionContext.globalState.update('browser', {name: message.browser, headless: message.headless});
-            vscode.window.showInformationMessage(`Current Settings: ${message.browser} ${message.headless === true ? 'headless' : 'headed'}`);
-            break;
-        }
+        this.extensionContext.globalState.update('browser', {name: message.browser, headless: message.headless});
       });
   }
 
@@ -52,7 +45,7 @@ export class SettingsView implements vscode.WebviewViewProvider {
       <p>Browser Settings <b id="current-browser"></b></p>
       <div class="container">
         <select name="browser" id="browser-select">
-          <option disabled selected value>shoose a browser</option>
+          <option disabled selected value>choose a browser</option>
           ${await getBrowserOptions()}
         </select>
         <i class="gg-eye-alt" id="visibility-icon"></i>
