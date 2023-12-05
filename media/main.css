@@ -9,6 +9,11 @@ select {
   font-size: medium;
 }
 
+select option {
+  color: var(--vscode-dropdown-foreground);
+  background-color: var(--vscode-dropdown-background);
+}
+
 select:focus {
   outline: none !important;
   border-color: var(--vscode-sidebar-border);

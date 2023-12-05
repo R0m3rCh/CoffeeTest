@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 import { TestAdapter, TestLoadStartedEvent, TestLoadFinishedEvent, TestRunStartedEvent, TestRunFinishedEvent, TestSuiteEvent, TestEvent } from 'vscode-test-adapter-api';
 import { Log } from 'vscode-test-adapter-util';
-
 import { ChildProcess } from 'child_process';
 import { BrowserOptions } from './interfaces/settingsView';
-import { loadTestCafeTests, runTestCafeTests } from './testSuitInfo';
+import { loadTestCafeTests, runTestCafeTests, testProcessPID } from './testSuitInfo';
 
 export class TestCafeAdapter implements TestAdapter {
 	private disposables: { dispose(): void }[] = [];
@@ -22,9 +21,7 @@ export class TestCafeAdapter implements TestAdapter {
 		private readonly log: Log,
 		public extensionContext: vscode.ExtensionContext
 	) {
-
 		this.log.info('Initializing testcafe adapter');
-
 		this.disposables.push(this.testsEmitter);
 		this.disposables.push(this.testStatesEmitter);
 		this.disposables.push(this.autorunEmitter);
@@ -58,7 +55,7 @@ export class TestCafeAdapter implements TestAdapter {
 			skipFiles: [
 				"<node_internals>/**"
 			],
-			program: "${workspaceFolder}/main.ts",
+			program: "${workspaceFolder}/runner.ts",
 			runtimeArgs: ["-r", "ts-node/register"],
 			env: {
 				FILTER: tests[0],
@@ -71,8 +68,7 @@ export class TestCafeAdapter implements TestAdapter {
 	}
 
 	cancel(): void {
-		// in a "real" TestAdapter this would kill the child process for the current test run (if there is any)
-		throw new Error("Method not implemented.");
+		testProcessPID.forEach(testProcess => process.kill(testProcess));
 	}
 
 	dispose(): void {
