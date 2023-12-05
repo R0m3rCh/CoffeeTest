@@ -11,10 +11,24 @@ This extension enables the execution of TestCafe scripts using a TypeScript [Run
 
 ## Features
 - Visualize and execute tests from the test explorer
-- Run and navigate to tests from the script file
-- Quickly navigate to the test script
-- Debug test scripts
+  
+  ![Test Explorer](/img/img_01.png?raw=true "Test Explorer")
+
 - Configure browser and its visibility
+  
+  ![Browser Configuration](/img/img_02.png?raw=true "Browser Configuration")
+
+- Start debugger for test scripts
+  
+  ![Debugger](/img/img_03.png?raw=true "Debugger")
+
+- Quickly navigate to the test script
+
+  ![Navigation](/img/img_04.png?raw=true "Navigation")
+
+- Run, debug and navigate to test explorer from the script file
+  
+  ![File Actions](/img/img_05.png?raw=true "File Actions")
 
 ## Limitations
 - Currently only test scripts with the `.ts` extension are valid.
