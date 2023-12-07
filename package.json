@@ -4,7 +4,7 @@
   "description": "Run your testcafe tests in the Sidebar of Visual Studio Code",
   "icon": "img/icon.png",
   "author": "Romer Chavez <romerchp@gmail.com>",
-  "publisher": "hbenl",
+  "publisher": "RaccoonBytes",
   "version": "0.0.1",
   "license": "MIT",
   "homepage": "https://github.com/R0m3rCh/CoffeeTest",
