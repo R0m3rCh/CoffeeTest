@@ -1,6 +1,6 @@
 {
   "name": "coffeetest",
-  "displayName": "testcafe Test Explorer",
+  "displayName": "CoffeeTest - Testcafe Test Explorer",
   "description": "Run your testcafe tests in the Sidebar of Visual Studio Code",
   "icon": "img/icon.png",
   "author": "Romer Chavez <romerchp@gmail.com>",
@@ -16,11 +16,14 @@
     "url": "https://github.com/R0m3rCh/CoffeeTest/issues"
   },
   "categories": [
+    "Testing",
     "Other"
   ],
   "keywords": [
     "test",
-    "testing"
+    "testing",
+    "test explorer",
+    "testcafe"
   ],
   "main": "out/main.js",
   "scripts": {
