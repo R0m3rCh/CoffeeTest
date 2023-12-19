@@ -103,6 +103,7 @@ async function runNode(
         shell: true,
         cwd: path.normalize(workspace.uri.fsPath)
       }
+      const bashEnvs = `FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" `;
       if (isWindows) {
         childProcessOptions.env = {
           FILTER: `${node.id}`,
@@ -113,10 +114,7 @@ async function runNode(
 
       outputChannel.show();
       testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
-			runningTestProcess = childProcess.spawn(isWindows === false
-        ? `FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npx ts-node runner.ts`
-        : 'npx ts-node runner.ts', childProcessOptions
-      );
+			runningTestProcess = childProcess.spawn(`${isWindows === false ? bashEnvs : ''}npx ts-node runner.ts`, childProcessOptions);
       testProcessPID.push(runningTestProcess.pid);
       runningTestProcess.stdout?.on('data', (data: Buffer) => {
         outputChannel.append(data.toString());
