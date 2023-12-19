@@ -1,3 +1,4 @@
+import path = require('path');
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import { FixtureFileData, TestEventCases } from './interfaces/TestSuite';
@@ -5,6 +6,7 @@ import { BrowserOptions } from './interfaces/settingsView';
 import { TestInfo, TestSuiteInfo, TestRunStartedEvent, TestRunFinishedEvent, TestSuiteEvent, TestEvent } from 'vscode-test-adapter-api';
 
 export let testProcessPID: number[] = [];
+const isWindows = process.platform === 'win32';
 
 export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
   let testCafeSuite: TestSuiteInfo = {
@@ -15,13 +17,13 @@ export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
   }
 
   for (let i = 0; i < testFiles.length; i++) {
-    const fixtureFileData: FixtureFileData[] = await getTestFileData(testFiles[i].path);
+    const fixtureFileData: FixtureFileData[] = await getTestFileData(path.normalize(testFiles[i].fsPath));
     const fixtureInfo: TestSuiteInfo = {
       type: 'suite',
       id: fixtureFileData[0].name,
       label: fixtureFileData[0].name,
       children: [],
-      tooltip: testFiles[i].path
+      tooltip: path.normalize(testFiles[i].fsPath)
     }
 
     testCafeSuite.children.push(fixtureInfo);
@@ -30,8 +32,8 @@ export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
         type: 'test',
         id: test.name,
         label:test.name,
-        file: testFiles[i].path,
-        tooltip: `${testFiles[i].path} - ${test.name}`,
+        file: path.normalize(testFiles[i].fsPath),
+        tooltip: `${path.normalize(testFiles[i].fsPath)} - ${test.name}`,
         line: test.loc.start.line -1,
         skipped: test.isSkipped
       }
@@ -97,10 +99,22 @@ async function runNode(
         'undefined': 'errored'
       }
       const outputChannel = vscode.window.createOutputChannel('testcafe-logs');
+      const childProcessOptions: Record<string, any> = {
+        shell: true,
+        cwd: path.normalize(workspace.uri.fsPath)
+      }
+      const bashEnvs = `FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" `;
+      if (isWindows) {
+        childProcessOptions.env = {
+          FILTER: `${node.id}`,
+          BROWSER: `${browserOptions?.name}`,
+          HEADLESS: `${browserOptions?.headless}`
+        }
+      }
 
       outputChannel.show();
       testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
-			runningTestProcess = childProcess.spawn(`FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npx ts-node runner.ts`, {shell: true, cwd: workspace.uri.path});
+			runningTestProcess = childProcess.spawn(`${isWindows === false ? bashEnvs : ''}npx ts-node runner.ts`, childProcessOptions);
       testProcessPID.push(runningTestProcess.pid);
       runningTestProcess.stdout?.on('data', (data: Buffer) => {
         outputChannel.append(data.toString());
