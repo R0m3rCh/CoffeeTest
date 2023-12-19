@@ -1,3 +1,4 @@
+import path = require('path');
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import { FixtureFileData, TestEventCases } from './interfaces/TestSuite';
@@ -15,13 +16,13 @@ export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
   }
 
   for (let i = 0; i < testFiles.length; i++) {
-    const fixtureFileData: FixtureFileData[] = await getTestFileData(testFiles[i].path);
+    const fixtureFileData: FixtureFileData[] = await getTestFileData(path.normalize(testFiles[i].fsPath));
     const fixtureInfo: TestSuiteInfo = {
       type: 'suite',
       id: fixtureFileData[0].name,
       label: fixtureFileData[0].name,
       children: [],
-      tooltip: testFiles[i].path
+      tooltip: path.normalize(testFiles[i].fsPath)
     }
 
     testCafeSuite.children.push(fixtureInfo);
@@ -30,8 +31,8 @@ export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
         type: 'test',
         id: test.name,
         label:test.name,
-        file: testFiles[i].path,
-        tooltip: `${testFiles[i].path} - ${test.name}`,
+        file: path.normalize(testFiles[i].fsPath),
+        tooltip: `${path.normalize(testFiles[i].fsPath)} - ${test.name}`,
         line: test.loc.start.line -1,
         skipped: test.isSkipped
       }
