@@ -101,7 +101,15 @@ async function runNode(
 
       outputChannel.show();
       testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
-			runningTestProcess = childProcess.spawn(`FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npx ts-node runner.ts`, {shell: true, cwd: workspace.uri.path});
+			runningTestProcess = childProcess.spawn(`npx ts-node runner.ts`, {
+        shell: true,
+        cwd: path.normalize(workspace.uri.fsPath),
+        env: {
+          FILTER: `${node.id}`,
+          BROWSER: `${browserOptions?.name}`,
+          HEADLESS: `${browserOptions?.headless}`
+        }
+      });
       testProcessPID.push(runningTestProcess.pid);
       runningTestProcess.stdout?.on('data', (data: Buffer) => {
         outputChannel.append(data.toString());
