@@ -6,6 +6,7 @@ import { BrowserOptions } from './interfaces/settingsView';
 import { TestInfo, TestSuiteInfo, TestRunStartedEvent, TestRunFinishedEvent, TestSuiteEvent, TestEvent } from 'vscode-test-adapter-api';
 
 export let testProcessPID: number[] = [];
+const isWindows = process.platform === 'win32';
 
 export async function loadTestCafeTests(testFiles: vscode.Uri[]) {
   let testCafeSuite: TestSuiteInfo = {
@@ -98,18 +99,24 @@ async function runNode(
         'undefined': 'errored'
       }
       const outputChannel = vscode.window.createOutputChannel('testcafe-logs');
-
-      outputChannel.show();
-      testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
-			runningTestProcess = childProcess.spawn(`npx ts-node runner.ts`, {
+      const childProcessOptions: Record<string, any> = {
         shell: true,
-        cwd: path.normalize(workspace.uri.fsPath),
-        env: {
+        cwd: path.normalize(workspace.uri.fsPath)
+      }
+      if (isWindows) {
+        childProcessOptions.env = {
           FILTER: `${node.id}`,
           BROWSER: `${browserOptions?.name}`,
           HEADLESS: `${browserOptions?.headless}`
         }
-      });
+      }
+
+      outputChannel.show();
+      testStatesEmitter.fire(<TestEvent>{ type: 'test', test: node.id, state: 'running'});
+			runningTestProcess = childProcess.spawn(isWindows === false
+        ? `FILTER="${node.id}" BROWSER="${browserOptions?.name}" HEADLESS="${browserOptions?.headless}" npx ts-node runner.ts`
+        : 'npx ts-node runner.ts', childProcessOptions
+      );
       testProcessPID.push(runningTestProcess.pid);
       runningTestProcess.stdout?.on('data', (data: Buffer) => {
         outputChannel.append(data.toString());
